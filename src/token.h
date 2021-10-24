@@ -24,7 +24,6 @@ typedef struct {
 
 t_token create_token(enum_token_type type, char* str_value, int i_value);
 
-bool verify_type(char* type);
 
 
 

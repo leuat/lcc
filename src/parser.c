@@ -42,7 +42,7 @@ node* parse_block();
 node* parse_type_spec() {
   t_token type = parser_current_token;
   if (!verify_type(type.str_value))
-    raise_error_p1("unknown or incorrect type : ",type.str_value);
+    raise_error_p1("undefined type : ",type.str_value);
 
   gobble();
   return create_node(nt_type_spec, type);
@@ -50,7 +50,8 @@ node* parse_type_spec() {
 
 node* parse_variable() {
   node* n = create_node(nt_variable, parser_current_token);
-
+  if (!symbol_find(parser_current_token.str_value))
+    raise_error_p1("undefined variable : ",parser_current_token.str_value);
   gobble();
 //  printf("Creating variable:%s\n",n->token.str_value);
   return n;
@@ -325,6 +326,7 @@ node* parse_function(node* func_type, t_token name) {
 
 node* parse_variable_declaration(node* func_type, t_token name) {
   // TO DO
+  printf("OH NOES parse declaration not implemented yet");
   return create_node(nt_var_decl,name);
 }
 
@@ -335,15 +337,21 @@ node* declaration_body() {
   t_token name = parser_current_token;
 
   gobble();
-
-  if (parser_current_token.type = tt_lparen)
+  if (parser_current_token.type == tt_lparen)
     return parse_function(n_type, name);
 
   return parse_variable_declaration(n_type, name);
 }
 
+void init_symtab() {
+  initialize_symboltable();
+}
+
+
 void parse(t_buffer* buf) {
   lexer_initialise(buf);
+  init_symtab();
+
   parser_current_token = lexer_get_next_token();
 
   node_root = create_node(nt_root, parser_current_token);

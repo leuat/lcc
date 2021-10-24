@@ -8,5 +8,6 @@ node* create_node(node_type nt, t_token tok) {
   n->left = NULL;
   n->center = NULL;
   n->block = NULL;
+  n->symtab = NULL;
   return n;
 }

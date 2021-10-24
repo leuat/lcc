@@ -4,6 +4,7 @@
 #include "util.h"
 #include "lexer.h"
 #include "node.h"
+#include "symboltable.h"
 
 
 extern node* node_root;
