@@ -15,6 +15,10 @@ void deb(char* s) {
 }
 
 
+enum_token_type curt() inline {
+  return parser_current_token.type;
+}
+
 void parser_eat(enum_token_type t)
 {
     if (parser_current_token.type == t) {
@@ -175,7 +179,7 @@ node* parse_expr() {
 node* parse_assignstatement() {
   node* left = parse_variable();
 
-  if (parser_current_token.type != tt_assign) {
+  if (curt() != tt_assign) {
     raise_error_p1("error assigning variable ",left->token.str_value);
   }
   node* assign = create_node(nt_assign, parser_current_token);
@@ -196,10 +200,10 @@ node* parse_assignstatement() {
 node* parse_statement() {
 //  printf("Parsing statement : %s\n","nada");
   node* n = NULL;
-    if (parser_current_token.type == tt_lcbracket) {
+    if (curt() == tt_lcbracket) {
         n = parse_block();
     }
-    else if (parser_current_token.type == tt_id) {
+    else if (curt() == tt_id) {
         bool isAssign;
 /*        node = FindProcedure(isAssign, nullptr);
         if (isAssign) {
@@ -326,8 +330,13 @@ node* parse_function(node* func_type, t_token name) {
 
 node* parse_variable_declaration(node* func_type, t_token name) {
   // TO DO
-  printf("OH NOES parse declaration not implemented yet");
-  return create_node(nt_var_decl,name);
+//  printf("OH NOES parse declaration not implemented yet");
+  if (curt()==tt_assign)
+    raise_error("initializing variables not implemented yet.");
+  node* decl = create_node(nt_var_decl,name);
+  decl->right = func_type;
+  parse_eat(tt_semicolon);
+  return decl;
 }
 
 
