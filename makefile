@@ -1,7 +1,7 @@
 TARGET = lcc
 
 CC = gcc
-CFLAGS = -g -Wfatal-errors
+CFLAGS = -Os -s -Wfatal-errors  -fno-stack-protector  -fno-unwind-tables -fno-asynchronous-unwind-tables  -fno-math-errno  -fno-unroll-loops
 
 OUTDIR = bin
 DATADIR = data
@@ -13,13 +13,13 @@ SRCS = $(wildcard *.c $(foreach fd, $(SUBDIR), $(fd)/*.c))
 NODIR_SRC = $(notdir $(SRCS))
 OBJS = $(addprefix $(DIR_OBJ)/, $(SRCS:c=o)) # obj/xxx.o obj/folder/xxx .o
 INC_DIRS = -I./ $(addprefix -I, $(SUBDIR))
-LIBS =
+LIBS =  -Wl,--gc-sections
 LIB_DIRS =
 
 PHONY := $(TARGET)
 $(TARGET): $(OBJS)
 	$(CC) -o $(OUTDIR)/$@ $(OBJS) $(LIB_DIRS) $(LIBS)
-
+	strip --strip-all  bin/lcc
 $(DIR_OBJ)/%.o: %.c $(INCS)
 	mkdir -p $(@D)
 	$(CC) -o $@ $(CFLAGS) -c $< $(INC_DIRS)

@@ -36,11 +36,12 @@ void lexer_advance() {
 
 
     }
+		/*
 		char str[2];
 		str[0] = lexer_current_char;
 		str[1] = 0;
     printf("%s",str);
-
+*/
 }
 
 void lexer_skip_whitespace()
@@ -49,6 +50,13 @@ void lexer_skip_whitespace()
         lexer_advance();
 }
 
+char lexer_peek(int n)
+{
+    int k=lexer_current_pos+n;
+    if (k>=lexer_source->length)
+        return ' ';
+    return lexer_source->data[k];
+}
 
 t_token get_id()
 {
@@ -109,11 +117,24 @@ t_token lexer_get_next_token() {
         }
 				if (lexer_current_char=='(') {
             lexer_advance();
-            return create_token(tt_lparen,"()",0);
+            return create_token(tt_lparen,"(",0);
         }
 				if (lexer_current_char==')') {
             lexer_advance();
             return create_token(tt_rparen,")",0);
+        }
+				if (lexer_current_char==';') {
+            lexer_advance();
+            return create_token(tt_semicolon,";",0);
+        }
+				if (lexer_current_char=='=' && lexer_peek(1)!='=') {
+            lexer_advance();
+            return create_token(tt_assign,"=",0);
+        }
+				if (lexer_current_char=='=' && lexer_peek(1)=='=') {
+            lexer_advance();
+						lexer_advance();
+            return create_token(tt_equals,"==",0);
         }
 				if (lexer_current_char=='&') {
 					lexer_advance();

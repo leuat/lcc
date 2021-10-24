@@ -3,11 +3,12 @@
 
 #include "util.h"
 #include "lexer.h"
+#include "node.h"
 
 
+extern node* node_root;
 
 void parse(t_buffer* buf);
-
 
 
 
