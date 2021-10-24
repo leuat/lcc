@@ -236,7 +236,7 @@ node* parse_statement() {
     }
     else
     if (curt() == tt_asm) {
-        return inline_assembler();
+      return inline_assembler();
     }
 
     /*
