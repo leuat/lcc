@@ -1,7 +1,16 @@
 
-int j;
+int j,k;
 
-int main() {
+void printf() {
+  asm("
+    mov ax,10h
+    int 21h
+
+  ");
+}
+
+
+int mainn() {
   j = 5;
   k = j;
 }

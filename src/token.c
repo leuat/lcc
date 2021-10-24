@@ -2,7 +2,7 @@
 #include <string.h>
 
 char* string_token_type[] = {"id","{","}","(",")","[","]",";","integer_const","eof",
-"int","char","=","=="};
+"int","char","=","==",",","asm","string"};
 
 
 t_token create_token(enum_token_type type, char* str_value, int i_value) {

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "error.h"
+#include "symboltable.h"
 
 t_buffer* lexer_source = 0;
 bool next_is_reference = false;
@@ -28,7 +29,7 @@ void lexer_advance() {
     }
     else {
         lexer_current_char = lexer_source->data[lexer_current_pos];
-        if (lexer_current_char=='n') {
+        if (lexer_current_char=='\n') {
         	data_current_line++;
             lexer_local_pos = 0;
 
@@ -58,6 +59,30 @@ char lexer_peek(int n)
     return lexer_source->data[k];
 }
 
+
+t_token lexer_string()
+{
+    char result[MAX_STRING_SIZE];
+		int cur = 0;
+    while (!lexer_is_finished && lexer_current_char!='\"') {
+        result[cur] = lexer_current_char;
+				cur+=1;
+				result[cur] = 0;
+      	lexer_advance();
+/*        if (lexer_current_char=='\\' && lexer_peek(1)=='\"') {
+            lexer_advance();
+            lexer_advance();
+            result[cur-1]='\"';
+        }
+				*/
+    }
+    lexer_advance();
+
+    return create_token(tt_string, result,0);
+
+}
+
+
 t_token get_id()
 {
     char result[ MAX_ID_SIZE ];
@@ -71,6 +96,12 @@ t_token get_id()
     }
     bool is_ref = next_is_reference;
     next_is_reference = false;
+
+		symbol_type* st = find_type(result,reserved_words);
+		if (st!=NULL) {
+			return st->type;
+		}
+
   //  return Syntax::s.GetID(result,isRef);
 /*
 		QString org = val;
@@ -99,6 +130,15 @@ t_token lexer_get_next_token() {
             lexer_advance();
             continue;
         }
+
+				// Generate string
+        if (lexer_current_char=='\"') {
+            lexer_advance();
+            return lexer_string();
+        }
+
+
+
         if (lexer_current_char=='{') {
             lexer_advance();
             return create_token(tt_lcbracket,"{",0);
@@ -122,6 +162,10 @@ t_token lexer_get_next_token() {
 				if (lexer_current_char==')') {
             lexer_advance();
             return create_token(tt_rparen,")",0);
+        }
+				if (lexer_current_char==',') {
+            lexer_advance();
+            return create_token(tt_comma,",",0);
         }
 				if (lexer_current_char==';') {
             lexer_advance();

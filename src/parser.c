@@ -9,13 +9,13 @@ node* node_root;
 
 
 void deb(char* s) {
-  printf("Line:%d\n",data_current_line);
+  printf("Line:%d\n",data_current_line+2);
   printf("%s%s\n",s,parser_current_token.str_value);
 
 }
 
 
-enum_token_type curt() inline {
+enum_token_type curt() {
   return parser_current_token.type;
 }
 
@@ -45,7 +45,7 @@ node* parse_block();
 
 node* parse_type_spec() {
   t_token type = parser_current_token;
-  if (!verify_type(type.str_value))
+  if (!find_type(type.str_value,typespec_table))
     raise_error_p1("undefined type : ",type.str_value);
 
   gobble();
@@ -53,9 +53,13 @@ node* parse_type_spec() {
 }
 
 node* parse_variable() {
+
+//  deb("curr: ");
+  //printf("here: %d\n",(parser_current_token.type==tt_id));
   node* n = create_node(nt_variable, parser_current_token);
   if (!symbol_find(parser_current_token.str_value))
     raise_error_p1("undefined variable : ",parser_current_token.str_value);
+
   gobble();
 //  printf("Creating variable:%s\n",n->token.str_value);
   return n;
@@ -195,6 +199,18 @@ node* parse_assignstatement() {
 }
 
 
+node* inline_assembler() {
+  parser_eat(tt_asm);
+  parser_eat(tt_lparen);
+  t_token cmd = parser_current_token;
+  parser_eat(tt_string);
+  parser_eat(tt_rparen);
+//  deb(cmd.str_value);
+
+  return create_node(nt_asm,cmd);
+}
+
+
 
 
 node* parse_statement() {
@@ -218,6 +234,11 @@ node* parse_statement() {
 
 
     }
+    else
+    if (curt() == tt_asm) {
+        return inline_assembler();
+    }
+
     /*
     else if (parser_current_token.type == TokenType::ADDRESS) {
         if (node==nullptr)
@@ -270,7 +291,7 @@ node* parse_statement() {
   if (n==NULL)
     raise_error("Node is nullpointer. Should not happen. Contact leuat@irio.co.uk and slap him.");
 
-    return n;
+  return n;
 
 
 }
@@ -313,7 +334,7 @@ node* parse_block() {
   return block;
 }
 
-node* parse_function(node* func_type, t_token name) {
+node* parse_declare_function(node* func_type, t_token name) {
   parser_eat(tt_lparen);
   // Parameter declarations - to do
   parser_eat(tt_rparen);
@@ -323,6 +344,10 @@ node* parse_function(node* func_type, t_token name) {
 
   node* proc = create_node(nt_func, name);
 
+  if (!find_function(name.str_value))
+    define_function(proc);
+  else
+    raise_error_p1("function already defined: ",name.str_value);
 
   return proc;
 
@@ -333,9 +358,21 @@ node* parse_variable_declaration(node* func_type, t_token name) {
 //  printf("OH NOES parse declaration not implemented yet");
   if (curt()==tt_assign)
     raise_error("initializing variables not implemented yet.");
+
+
   node* decl = create_node(nt_var_decl,name);
   decl->right = func_type;
-  parse_eat(tt_semicolon);
+
+  if (symbol_find(name.str_value))
+    raise_error_p1("symbol already defined: ",name.str_value);
+
+
+  symbol_type* type = find_type(func_type->token.str_value,typespec_table);
+//  printf("FOUND TYPE: %s\n",type->type.str_value);
+  define_symbol(create_symbol(name,type));
+
+
+
   return decl;
 }
 
@@ -347,13 +384,26 @@ node* declaration_body() {
 
   gobble();
   if (parser_current_token.type == tt_lparen)
-    return parse_function(n_type, name);
+    return parse_declare_function(n_type, name);
 
-  return parse_variable_declaration(n_type, name);
+  // can be int a,b,c;
+  node* decl = parse_variable_declaration(n_type, name);
+
+  while (curt()==tt_comma) {
+    gobble(); // eat the comma
+    node* n = parse_variable_declaration(n_type, parser_current_token);
+    gobble();
+    n->right = decl;
+    decl = n;
+  }
+  parser_eat(tt_semicolon);
+
+  return decl;
 }
 
 void init_symtab() {
   initialize_symboltable();
+  functions = NULL;
 }
 
 

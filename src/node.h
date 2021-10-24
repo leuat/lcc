@@ -7,7 +7,7 @@
 #include "symboltable.h"
 
 typedef enum { nt_variable, nt_number, nt_func_decl, nt_func, nt_var_decl, nt_type_spec,
-              nt_block, nt_root, nt_statement, nt_statement_list, nt_assign
+              nt_block, nt_root, nt_statement, nt_statement_list, nt_assign, nt_asm
             } node_type;
 
 
@@ -23,6 +23,10 @@ typedef struct node {
 
 
 node* create_node(node_type nt, t_token tok);
+node* functions;
+
+void define_function(node* f);
+node* find_function(char* name);
 
 
 

@@ -8,6 +8,7 @@
 
 
 #define MAX_ID_SIZE 64
+#define MAX_STRING_SIZE 256
 
 char lexer_current_char;
 int lexer_current_pos;

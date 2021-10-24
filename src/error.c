@@ -6,7 +6,7 @@ bool abort_all = false;
 
 
 void default_error() {
-	printf("\nFatal error on line %d: \n\n",data_current_line);
+	printf("\nFatal error on line %d: \n\n",(data_current_line+2));
 	abort_all = true;
 
 }
