@@ -1,5 +1,5 @@
 #include "symboltable.h"
-
+#include <string.h>
 
 symbol_type* create_symbol_type(t_token var) {
   symbol_type* sym = malloc (sizeof (struct symbol_type));
