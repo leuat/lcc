@@ -1,24 +1,34 @@
 #include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+
+const char digit[] = "0123456789$%";
+
+const char digit_all[] = "0123456789$%ABCDEFabcdef";
+
+const char alpha[] = "abcdefghijklmnopqrstuvwxyz_";
+
+const char alnum[] = "abcdefghijklmnopqrstuvwxyz_0123456789$%";
 
 int read_file(char* filename, t_buffer* buffer) {
 	FILE *f;
 	f = fopen(filename, "r");
     if(f == NULL)
         return 1;
-     
+
     fseek(f, 0L, SEEK_END);
     buffer->length = ftell(f);
-    fseek(f, 0L, SEEK_SET);  
+    fseek(f, 0L, SEEK_SET);
 
-    buffer->data = (char*)malloc(buffer->length);   
+    buffer->data = (char*)malloc(buffer->length);
     if(buffer->data == NULL)
         return 1;
- 
+
     fread(buffer->data, sizeof(char), buffer->length, f);
     fclose(f);
- 
+
     return 0;
 }
 
@@ -30,3 +40,28 @@ int release_buffer(t_buffer* buffer) {
 	return 0;
 }
 
+bool is_digit(char* val) {
+	if (strstr(digit, val) != NULL) return true;
+	return false;
+}
+bool is_digit_all(char* val) {
+	if (strstr(digit_all, val) != NULL) return true;
+	return false;
+}
+bool is_alpha(char* val) {
+	if (strstr(alpha, val) != NULL) return true;
+	return false;
+}
+bool is_alnum(char* val) {
+	if (strstr(alnum, val) != NULL) return true;
+	return false;
+}
+
+
+char temp_char[2];
+
+char* char_to_string(char val) {
+	temp_char[0] = val;
+	temp_char[1] = 0;
+	return (char*)&temp_char;
+}

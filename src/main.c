@@ -1,7 +1,8 @@
 #include <stdio.h>
 
+#include "error.h"
 #include "util.h"
-
+#include "parser.h"
 
 
 void print_usage() {
@@ -16,9 +17,8 @@ int compile(char* filename) {
 		raise_error_p1("Could not open file: ",filename);
 		return 1;
 	}
-	printf("%s",file.data);
-
-
+//	printf("%s",file.data);
+	parse(&file);
 	release_buffer(&file);
 	return 0;
 }
@@ -32,8 +32,8 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	if (compile(argv[1])==0) 
+	if (compile(argv[1])==0)
 		printf("ok.\n");
-	
+
 	return 0;
 }
