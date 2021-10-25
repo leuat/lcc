@@ -13,4 +13,5 @@ void printf() {
 int mainn() {
   j = 5;
   k = j;
+  printf();
 }
