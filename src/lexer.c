@@ -77,8 +77,10 @@ t_token lexer_string()
 				*/
     }
     lexer_advance();
-
-    return create_token(tt_string, result,0);
+		t_token t = create_token(tt_string, "string",0);
+		t.large_string = malloc(cur);
+		strcpy(t.large_string, result);
+    return t;
 
 }
 

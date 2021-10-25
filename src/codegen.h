@@ -11,6 +11,7 @@ void codegen_cleanup();
 
 void codegen_visit(node* root);
 
+void codegen_validate();
 
 
 

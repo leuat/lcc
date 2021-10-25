@@ -7,9 +7,12 @@
 #define MAX_ASM_LENGTH 100000
 
 extern t_buffer main_block;
+extern t_buffer proc_block;
 extern t_buffer data_block;
 
+void stamp(char val);
 void assembler_init();
+void part(char* str);
 void as(char* str);
 void comment(char* str);
 void lbl(char* str);

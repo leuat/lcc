@@ -1,7 +1,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
-#define TOKEN_MAX_SIZE 32
+#define TOKEN_MAX_SIZE 64
 
 #include "data.h"
 #include <stdbool.h>
@@ -17,6 +17,7 @@ extern char *string_token_type[];
 typedef struct {
 	enum_token_type type;
 	char str_value[TOKEN_MAX_SIZE];
+	char* large_string;
 	int ivalue;
 	int line_number;
 	bool is_reference;

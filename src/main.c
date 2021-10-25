@@ -27,6 +27,12 @@ int compile(char* filename) {
 
 	assembler_save("a.asm");
 
+	codegen_validate();
+	
+	codegen_cleanup();
+
+
+
 	return 0;
 }
 

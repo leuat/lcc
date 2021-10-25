@@ -211,12 +211,16 @@ node* inline_assembler() {
 
 node* parse_call_function() {
   node* n = find_function(parser_current_token.str_value);
+  t_token name = parser_current_token;
   if (n==NULL)
     return NULL;
   gobble();
   parser_eat(tt_lparen);
   parser_eat(tt_rparen);
-  return n;
+
+  node* call = create_node(nt_func,name);
+
+  return call;
 }
 
 
@@ -351,7 +355,7 @@ node* parse_declare_function(node* func_type, t_token name) {
 
   node* block = parse_block();
 
-  node* proc = create_node(nt_func, name);
+  node* proc = create_node(nt_func_decl, name);
 
   proc->block = block;
 
@@ -374,7 +378,7 @@ node* parse_variable_declaration(node* func_type, t_token name) {
 
 
   node* decl = create_node(nt_var_decl,name);
-  decl->right = func_type;
+  decl->left = func_type;
 
   if (symbol_find(name.str_value))
     raise_error_p1("symbol already defined: ",name.str_value);
@@ -401,7 +405,6 @@ node* declaration_body() {
 
   // can be int a,b,c;
   node* decl = parse_variable_declaration(n_type, name);
-
   while (curt()==tt_comma) {
     gobble(); // eat the comma
     node* n = parse_variable_declaration(n_type, parser_current_token);
@@ -427,11 +430,19 @@ void parse(t_buffer* buf) {
   parser_current_token = lexer_get_next_token();
 
   node_root = create_node(nt_root, parser_current_token);
-
+  node* nxt = NULL;
   while (!lexer_is_finished) {
 //    parser_eat(parser_current_token.type);
+
     node* decl = declaration_body();
-    decl->right = node_root->right;
-    node_root->right = decl;
+    if (node_root->center==NULL)
+      node_root->center = decl;
+    else
+      nxt->center = decl;
+
+    nxt = decl;
+
+//    decl->right = node_root->right;
+  //  node_root->right = decl;
   }
 }

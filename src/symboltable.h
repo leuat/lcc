@@ -9,6 +9,8 @@
 
 typedef struct symbol_type {
     t_token type;
+    char asm_val[32];
+
     struct symbol_type* next;
 
 } symbol_type;
@@ -33,7 +35,7 @@ void initialize_symboltable();
 
 
 symbol* create_symbol(t_token var, symbol_type* type);
-symbol_type* create_symbol_type(t_token var);
+symbol_type* create_symbol_type(t_token var, char* asm_val);
 
 void define_symbol(symbol* s);
 void define_type(symbol_type* s);

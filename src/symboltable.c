@@ -1,8 +1,10 @@
 #include "symboltable.h"
 #include <string.h>
 
-symbol_type* create_symbol_type(t_token var) {
+symbol_type* create_symbol_type(t_token var, char* asm_val) {
   symbol_type* sym = malloc (sizeof (struct symbol_type));
+  strcpy(sym->asm_val,asm_val);
+  //sym->asm_val = asm_val;
   sym->type = var;
   sym->next = NULL;
   return sym;
@@ -43,12 +45,12 @@ void initialize_symboltable() {
   symbol_table = NULL;
   typespec_table = NULL;
 
-  define_type( create_symbol_type(create_token(tt_id,"void",0)));
-  define_type( create_symbol_type(create_token(tt_id,"int",0)));
-  define_type( create_symbol_type(create_token(tt_id,"char",0)));
+  define_type( create_symbol_type(create_token(tt_id,"void",0),""));
+  define_type( create_symbol_type(create_token(tt_id,"int",0),"dw"));
+  define_type( create_symbol_type(create_token(tt_id,"char",0),"db"));
 
 
-  define_reserved_word( create_symbol_type(create_token(tt_asm,"asm",0)));
+  define_reserved_word( create_symbol_type(create_token(tt_asm,"asm",0),""));
 
 }
 
