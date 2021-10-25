@@ -189,7 +189,6 @@ node* parse_assignstatement() {
   node* assign = create_node(nt_assign, parser_current_token);
   parser_eat(tt_assign);
   node* right = parse_expr();
-
   assign->left = left;
   assign->right = right;
 
@@ -210,7 +209,15 @@ node* inline_assembler() {
   return create_node(nt_asm,cmd);
 }
 
-
+node* parse_call_function() {
+  node* n = find_function(parser_current_token.str_value);
+  if (n==NULL)
+    return NULL;
+  gobble();
+  parser_eat(tt_lparen);
+  parser_eat(tt_rparen);
+  return n;
+}
 
 
 node* parse_statement() {
@@ -220,18 +227,20 @@ node* parse_statement() {
         n = parse_block();
     }
     else if (curt() == tt_id) {
-        bool isAssign;
+//        bool isAssign;
+        n = parse_call_function();
+
 /*        node = FindProcedure(isAssign, nullptr);
         if (isAssign) {
             return Empty();
         }
-
         if (node==nullptr)
             node = BuiltinFunction();
 */
         if (n==NULL)
           n = parse_assignstatement();
 
+//          deb("Cur");
 
     }
     else
@@ -344,6 +353,10 @@ node* parse_declare_function(node* func_type, t_token name) {
 
   node* proc = create_node(nt_func, name);
 
+  proc->block = block;
+
+//  printf("Parser define function %s\n",name.str_value);
+
   if (!find_function(name.str_value))
     define_function(proc);
   else
@@ -417,6 +430,8 @@ void parse(t_buffer* buf) {
 
   while (!lexer_is_finished) {
 //    parser_eat(parser_current_token.type);
-    declaration_body();
+    node* decl = declaration_body();
+    decl->right = node_root->right;
+    node_root->right = decl;
   }
 }

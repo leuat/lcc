@@ -29,6 +29,31 @@ int read_file(char* filename, t_buffer* buffer) {
     fread(buffer->data, sizeof(char), buffer->length, f);
     fclose(f);
 
+		buffer->cur_pos = 0;
+
+    return 0;
+}
+
+int write_file(char* filename, t_buffer* buffer, char* mode) {
+	FILE *f;
+	f = fopen(filename, mode);
+  fwrite(buffer->data, sizeof(char), buffer->cur_pos, f);
+  fclose(f);
+  return 0;
+}
+
+
+
+int allocate_buffer(t_buffer* buffer, int len) {
+    buffer->length = len;
+    buffer->data = (char*)malloc(buffer->length);
+    if(buffer->data == NULL)
+        return 1;
+		for (int i=0;i<len;i++)
+			buffer->data[i]=0;
+
+		buffer->cur_pos = 0;
+
     return 0;
 }
 
@@ -64,4 +89,9 @@ char* char_to_string(char val) {
 	temp_char[0] = val;
 	temp_char[1] = 0;
 	return (char*)&temp_char;
+}
+
+// Debugging
+void db(char* v, int i) {
+  printf("%s :%d\n",v,i);
 }

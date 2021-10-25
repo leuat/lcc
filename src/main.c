@@ -3,11 +3,11 @@
 #include "error.h"
 #include "util.h"
 #include "parser.h"
+#include "codegen.h"
 
 
 void print_usage() {
 	printf("lcc fatal error: no input files. \n");
-
 }
 
 
@@ -17,9 +17,16 @@ int compile(char* filename) {
 		raise_error_p1("Could not open file: ",filename);
 		return 1;
 	}
-//	printf("%s",file.data);
 	parse(&file);
+
 	release_buffer(&file);
+
+	codegen_init();
+
+	codegen_visit(node_root);
+
+	assembler_save("a.asm");
+
 	return 0;
 }
 

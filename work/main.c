@@ -1,6 +1,8 @@
 
 int j,k;
 
+int l;
+
 void printf() {
   asm("
     mov ax,10h
@@ -10,7 +12,7 @@ void printf() {
 }
 
 
-int mainn() {
+int main() {
   j = 5;
   k = j;
   printf();

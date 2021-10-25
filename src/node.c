@@ -16,15 +16,17 @@ node* create_node(node_type nt, t_token tok) {
 node* find_function(char* name) {
   node* t = functions;
   while (t!=NULL) {
+//    printf("looking for function: %s\n",t->token.str_value);
     if (strcmp(t->token.str_value,name)==0)
       return t;
-      t = t->right;
+
+    t = t->left;
   }
 	return NULL;
 }
 
 void define_function(node* s) {
-  s->right = functions;
+//  printf("Defining function: %s\n",s->token.str_value);
+  s->left = functions;
   functions = s;
-
 }
