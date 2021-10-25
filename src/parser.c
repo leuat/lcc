@@ -373,8 +373,18 @@ node* parse_declare_function(node* func_type, t_token name) {
 node* parse_variable_declaration(node* func_type, t_token name) {
   // TO DO
 //  printf("OH NOES parse declaration not implemented yet");
-  if (curt()==tt_assign)
+  if (curt()==tt_assign) {
     raise_error("initializing variables not implemented yet.");
+    gobble();
+    if (curt()==tt_string)
+      raise_error("string assign not implemented yet");
+
+    if (!name.is_pointer) {
+//      name.ivalue = parse_int();
+  // WORK HERE CONTINUE
+    }
+
+  }
 
 
   node* decl = create_node(nt_var_decl,name);

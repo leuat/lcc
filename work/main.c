@@ -1,7 +1,7 @@
 
 int j,k;
 
-int l;
+int l = 10;
 
 void exit() {
   asm("

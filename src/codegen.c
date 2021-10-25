@@ -1,7 +1,7 @@
 #include "codegen.h"
 #include <string.h>
 #include "assembler.h"
-
+#include "error.h"
 bool has_main = false;
 
 

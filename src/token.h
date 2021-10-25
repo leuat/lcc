@@ -8,7 +8,8 @@
 
 
 typedef enum {tt_id, tt_lcbracket,tt_rcbracket,tt_lparen,tt_rparen,tt_lbracket, tt_rbracket, tt_semicolon,
-								tt_integer_const, tt_eof,tt_int,tt_char,tt_assign, tt_equals,tt_comma, tt_asm, tt_string} enum_token_type;
+								tt_integer_const, tt_eof,tt_int,tt_char,tt_assign, tt_equals,tt_comma, tt_asm, tt_string,
+							tt_asterisk} enum_token_type;
 
 
 
@@ -19,6 +20,7 @@ typedef struct {
 	char str_value[TOKEN_MAX_SIZE];
 	char* large_string;
 	int ivalue;
+	bool is_pointer;
 	int line_number;
 	bool is_reference;
 } t_token;

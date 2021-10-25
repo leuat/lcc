@@ -132,7 +132,7 @@ t_token lexer_get_next_token() {
             lexer_advance();
             continue;
         }
-
+				bool next_is_pointer = false;
 				// Generate string
         if (lexer_current_char=='\"') {
             lexer_advance();
@@ -168,6 +168,10 @@ t_token lexer_get_next_token() {
 				if (lexer_current_char==',') {
             lexer_advance();
             return create_token(tt_comma,",",0);
+        }
+				if (lexer_current_char=='*') {
+            lexer_advance();
+            return create_token(tt_asterisk,"*",0);
         }
 				if (lexer_current_char==';') {
             lexer_advance();
@@ -206,6 +210,7 @@ t_token lexer_get_next_token() {
 				if (is_alpha(char_to_string(lexer_current_char)) || lexer_current_char=='$') {
             return get_id();
         }
+
 
 				raise_error_p1("Error lexing: ",char_to_string(lexer_current_char));
 

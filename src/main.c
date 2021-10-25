@@ -4,7 +4,7 @@
 #include "util.h"
 #include "parser.h"
 #include "codegen.h"
-
+#include "a_eval.h"
 
 void print_usage() {
 	printf("lcc fatal error: no input files. \n");
@@ -28,7 +28,7 @@ int compile(char* filename) {
 	assembler_save("a.asm");
 
 	codegen_validate();
-	
+
 	codegen_cleanup();
 
 
@@ -40,6 +40,10 @@ int compile(char* filename) {
 
 int main(int argc, char *argv[]) {
 
+//	int val = evaluate_int("10*(5+2)");
+//	printf("val: %d\n",val);
+
+
 	if (argc==0) {
 		print_usage();
 		return 1;
@@ -47,6 +51,7 @@ int main(int argc, char *argv[]) {
 
 	if (compile(argv[1])==0)
 		printf("ok.\n");
+
 
 	return 0;
 }
