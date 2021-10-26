@@ -223,10 +223,9 @@ int evaluate(Expr* expr) {
 }
 
 int evaluate_int(char* str) {
-  Expr* expr = NULL;
   G_STRING_ITERATOR = 0;
 
-  expr = expression(str);
+  Expr* expr = expression(str);
   int val = evaluate(expr);
   free(expr);
   return val;
