@@ -37,6 +37,7 @@ void part(char* str) {
   while (str[i]!=0) {
     stamp(str[i++]);
   }
+  
 }
 
 void assembler_init() {

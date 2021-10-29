@@ -46,8 +46,8 @@ void initialize_symboltable() {
   typespec_table = NULL;
 
   define_type( create_symbol_type(create_token(tt_id,"void",0),""));
-  define_type( create_symbol_type(create_token(tt_id,"int",0),"dw"));
-  define_type( create_symbol_type(create_token(tt_id,"char",0),"db"));
+  define_type( create_symbol_type(create_token(tt_int,"int",0),"dw"));
+  define_type( create_symbol_type(create_token(tt_char,"char",0),"db"));
 
 
   define_reserved_word( create_symbol_type(create_token(tt_asm,"asm",0),""));

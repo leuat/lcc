@@ -29,6 +29,8 @@ void visit_all_right(node* node) {
   if (node!=NULL)
     codegen_visit(node);
 
+  
+
   if (node->right!=NULL)
     visit_all_right(node->right);
 /*  while (node!=NULL) {
@@ -79,12 +81,38 @@ void visit_define_general(node*n) {
   if (st==NULL)
     raise_error("codegen visit_var_decl NULL should not happen!");
 
+  symbol* s = symbol_find(n->token.str_value);
+
   part(n->token.str_value);
   part(":\t");
   //printf("*** %s\n",n->left->token.str_value);
+
+  if (n->token.is_pointer) {
+    part("dq 0\n");
+    return;
+  }
+
   part(st->asm_val); // db, dw etc
   part("\t");
-  part("0"); // Don't have initvalues yet!
+  bool ok = false;
+
+
+
+  if (s->type->type.type == tt_char) {
+    // do we have a string?
+    if (n->token.large_string!=NULL) {
+      if (n->token.is_string)
+        part("\"");
+      part(n->token.large_string);
+      if (n->token.is_string)
+        part("\",10");
+      ok = true;
+    }
+  }
+  if (!ok)
+    part("0"); // Don't have initvalues
+//  if (s->type->type.type == tt_char)
+  //   db(n->token.large_string,0);
   part("\n");
 
 }

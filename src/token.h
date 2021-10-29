@@ -21,6 +21,8 @@ typedef struct {
 	char* large_string;
 	int ivalue;
 	bool is_pointer;
+	bool is_string;
+    int array_count;
 	int line_number;
 	bool is_reference;
 } t_token;

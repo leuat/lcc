@@ -11,6 +11,9 @@ t_token create_token(enum_token_type type, char* str_value, int i_value) {
 	t.ivalue = i_value;
 	t.type = type;
 	t.is_pointer = false;
+	t.is_string = false;
+	t.array_count = -1; // 0 = is array with unknown size, >=1 size
 	t.line_number = data_current_line;
+	t.large_string = NULL;
 	return t;
 }

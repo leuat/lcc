@@ -138,6 +138,11 @@ t_token lexer_get_next_token() {
             lexer_advance();
             return lexer_string();
         }
+//        printf("%c",lexer_current_char);
+				if (lexer_current_char=='*') {
+            lexer_advance();
+            return create_token(tt_asterisk,"*",0);
+        }
 
 
 
@@ -168,10 +173,6 @@ t_token lexer_get_next_token() {
 				if (lexer_current_char==',') {
             lexer_advance();
             return create_token(tt_comma,",",0);
-        }
-				if (lexer_current_char=='*') {
-            lexer_advance();
-            return create_token(tt_asterisk,"*",0);
         }
 				if (lexer_current_char==';') {
             lexer_advance();

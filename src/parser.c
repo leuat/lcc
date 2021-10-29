@@ -2,10 +2,14 @@
 #include "error.h"
 #include "token.h"
 #include "node.h"
+#include "a_eval.h"
 
 t_token parser_current_token;
 
 node* node_root;
+
+bool is_string;
+
 
 
 void deb(char* s) {
@@ -39,6 +43,29 @@ void parser_eat(enum_token_type t)
 void gobble() {
   parser_eat(parser_current_token.type);
 }
+
+
+int parse_const_int() {
+  char str[256];
+  int pos=0;
+  is_string = false;
+  while (lexer_current_char!=';') {
+    if (lexer_current_char=='\"') {
+      is_string = true;
+      return -1;
+    }
+    if (lexer_current_char!=' ') {
+      str[pos++] = lexer_current_char;
+      str[pos]=0;
+    }
+    lexer_advance();
+  }
+  while (curt()!=tt_semicolon)
+    gobble();
+
+  return evaluate_int(str);
+}
+
 
 node* parse_block();
 
@@ -369,23 +396,40 @@ node* parse_declare_function(node* func_type, t_token name) {
   return proc;
 
 }
+bool parse_array_or_pointer(t_token* name)  {
+  // char* c
+  // char[] c;
+  if (curt()==tt_lbracket) {
+    gobble();
+    name->array_count=0;
+    if (curt()==tt_rbracket) {
+      gobble();
+      return true;
+    }
+    name->array_count = parse_const_int();
+    parser_eat(tt_rbracket);
+    return true;
+  }
+  return false;
+}
 
 node* parse_variable_declaration(node* func_type, t_token name) {
   // TO DO
 //  printf("OH NOES parse declaration not implemented yet");
+ parse_array_or_pointer(&name); // * or [] 
+ 
   if (curt()==tt_assign) {
-//    raise_error("initializing variables not implemented yet.");
-    gobble();
-    if (curt()==tt_string)
-      raise_error("string assign not implemented yet");
 
-    if (!name.is_pointer) {
-      name.ivalue = parser_current_token.ivalue;
-      printf("VALUE of %s : %d\n",name.str_value, name.ivalue);
-//      name.ivalue = parse_int();
-  // WORK HERE CONTINUE
-    }
 
+    name.ivalue = parse_const_int();
+      if (is_string) {
+        parser_eat(tt_assign);
+//        printf("wooot %s\n",parser_current_token.large_string);
+        name.large_string = parser_current_token.large_string;
+        name.is_string = true;
+        parser_eat(tt_string);
+      }
+  
   }
 
 
@@ -406,12 +450,28 @@ node* parse_variable_declaration(node* func_type, t_token name) {
 }
 
 
+
+
+
+t_token get_variable_name() {
+   bool next_is_pointer = false;
+  if (curt()==tt_asterisk) {
+      next_is_pointer = true;
+      gobble();
+  }
+ t_token name = parser_current_token;
+ name.is_pointer = next_is_pointer;
+ return name;
+}
+
+
 node* declaration_body() {
 
   node* n_type = parse_type_spec();
-  t_token name = parser_current_token;
+  t_token name = get_variable_name();
 
-  gobble();
+  gobble(); // Gobbles the NAME
+
   if (parser_current_token.type == tt_lparen)
     return parse_declare_function(n_type, name);
 
@@ -419,7 +479,7 @@ node* declaration_body() {
   node* decl = parse_variable_declaration(n_type, name);
   while (curt()==tt_comma) {
     gobble(); // eat the comma
-    node* n = parse_variable_declaration(n_type, parser_current_token);
+    node* n = parse_variable_declaration(n_type, get_variable_name());
     gobble();
     n->right = decl;
     decl = n;
