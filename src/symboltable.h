@@ -27,7 +27,7 @@ typedef struct symbol {
 
 typedef struct t_symbol_table {
     struct symbol* symbols;
-    struct symbol_table* child, *parent;
+    struct t_symbol_table* child, *parent;
 } t_symbol_table;
 
 
