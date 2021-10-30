@@ -66,8 +66,10 @@ int parse_const_int() {
   return evaluate_int(str);
 }
 
-
+ // Forward decls
 node* parse_block();
+t_token get_variable_name();
+node* parser_function_parameter_declarations();
 
 
 node* parse_type_spec() {
@@ -217,7 +219,7 @@ node* parse_assignstatement() {
   parser_eat(tt_assign);
   node* right = parse_expr();
   assign->left = left;
-  assign->right = right;
+  assign->block = right;
 
 //  printf("After assign statement: %s",parser_current_token.str_value);
 
@@ -236,17 +238,46 @@ node* inline_assembler() {
   return create_node(nt_asm,cmd);
 }
 
+node* parse_function_parameters(node* func) {
+  node* params = NULL;
+  node* next = NULL;
+  int cur = 0;
+  int req = func->token.ivalue;
+  while (curt()!=tt_rparen) {
+    cur++;
+    node* n = parse_expr();
+    if (params==NULL) {
+      params = n;
+      next = params;
+    }
+    else {
+      next->right = n;
+      next = n;
+    }
+    if (curt()!=tt_rparen) 
+      parser_eat(tt_comma);
+  }  
+  if (cur!=req)
+    raise_error_p1("incorrect number of parameters when calling function: ",func->token.str_value);
+//    printf("parse func params: %d\n",params->type);
+  return params;
+}
+
+
 node* parse_call_function() {
-  node* n = find_function(parser_current_token.str_value);
+  node* func = find_function(parser_current_token.str_value);
   t_token name = parser_current_token;
-  if (n==NULL)
+  if (func == NULL)
     return NULL;
   gobble();
   parser_eat(tt_lparen);
+  int count = 0;
+  node* params = parse_function_parameters(func);
+
   parser_eat(tt_rparen);
 
   node* call = create_node(nt_func,name);
-
+  call->left = params;
   return call;
 }
 
@@ -374,9 +405,21 @@ node* parse_block() {
   return block;
 }
 
+
+
+
+
 node* parse_declare_function(node* func_type, t_token name) {
+  push_symbol_table();
+
+  node* params = NULL;
+
   parser_eat(tt_lparen);
   // Parameter declarations - to do
+  int count = 0;
+  if (curt()!=tt_rparen) // no parameters
+    params = parser_function_parameter_declarations(&count); // Parse params  parser_eat(tt_rparen);
+
   parser_eat(tt_rparen);
 
 
@@ -384,7 +427,10 @@ node* parse_declare_function(node* func_type, t_token name) {
 
   node* proc = create_node(nt_func_decl, name);
 
+  proc->token.ivalue = count;
+
   proc->block = block;
+  proc->right = params;
 
 //  printf("Parser define function %s\n",name.str_value);
 
@@ -392,6 +438,9 @@ node* parse_declare_function(node* func_type, t_token name) {
     define_function(proc);
   else
     raise_error_p1("function already defined: ",name.str_value);
+
+
+  pop_symbol_table();
 
   return proc;
 
@@ -449,6 +498,27 @@ node* parse_variable_declaration(node* func_type, t_token name) {
   return decl;
 }
 
+
+node* parser_function_parameter_declarations(int* count) {
+  node* n_type = parse_type_spec();
+  t_token name = get_variable_name();
+
+  gobble(); // Gobbles the NAME
+  (*count)++;
+  // can be int a,b,c;
+  node* decl = parse_variable_declaration(n_type, name);
+  while (curt()==tt_comma) {
+    gobble(); // eat the comma
+    node* n_type = parse_type_spec(); // type decl
+
+    node* n = parse_variable_declaration(n_type, get_variable_name());
+    gobble();
+    n->right = decl;
+    decl = n;
+    (*count)++;
+  }
+  return decl;
+}
 
 
 

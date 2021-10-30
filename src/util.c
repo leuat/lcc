@@ -84,6 +84,7 @@ bool is_alnum(char* val) {
 
 
 char temp_char[2];
+char temp_buffer[256];
 
 char* char_to_string(char val) {
 	temp_char[0] = val;

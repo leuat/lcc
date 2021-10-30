@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+extern char temp_buffer[256];
+
 typedef struct t_buffer {
    char filename[50];
    char* data;

@@ -11,6 +11,13 @@ symbol_type* create_symbol_type(t_token var, char* asm_val) {
 }
 
 
+t_symbol_table* create_symbol_table() {
+  t_symbol_table *st = malloc (sizeof (struct t_symbol_table));
+  st->child = NULL;
+  st->parent = NULL;
+  st->symbols = NULL;
+  return st;
+}
 
 symbol* create_symbol(t_token var,symbol_type* type) {
   symbol *sym = malloc (sizeof (struct symbol));
@@ -21,10 +28,22 @@ symbol* create_symbol(t_token var,symbol_type* type) {
   return sym;
 }
 
+void push_symbol_table() {
+  t_symbol_table* nt = create_symbol_table();
+  current_symbol_table->child = nt;
+  nt->parent = current_symbol_table;
+  current_symbol_table = nt;
+}
+
+void pop_symbol_table() {
+  current_symbol_table = current_symbol_table->parent;
+  current_symbol_table->child = NULL;
+
+}
 
 void define_symbol(symbol* s) {
-  s->next = symbol_table;
-  symbol_table = s;
+  s->next = current_symbol_table->symbols;
+  current_symbol_table->symbols = s;
 
 }
 
@@ -42,12 +61,15 @@ void define_reserved_word(symbol_type* s) {
 
 
 void initialize_symboltable() {
-  symbol_table = NULL;
+  root_symbol_table = create_symbol_table();
+  current_symbol_table = root_symbol_table;
   typespec_table = NULL;
 
   define_type( create_symbol_type(create_token(tt_id,"void",0),""));
   define_type( create_symbol_type(create_token(tt_int,"int",0),"dw"));
   define_type( create_symbol_type(create_token(tt_char,"char",0),"db"));
+  define_type( create_symbol_type(create_token(tt_long,"long",0),"dd"));
+  define_type( create_symbol_type(create_token(tt_int64,"int64",0),"dq"));
 
 
   define_reserved_word( create_symbol_type(create_token(tt_asm,"asm",0),""));
@@ -66,12 +88,21 @@ symbol_type* find_type(char* type, symbol_type* parent) {
 	return NULL;
 }
 
-symbol* symbol_find(char* name) {
-  symbol* t = symbol_table;
+
+symbol* symbol_find_recursive(t_symbol_table* symtab, char* name) {
+  if (symtab==NULL)
+  	return NULL;
+  symbol* t = symtab->symbols;
   while (t!=NULL) {
     if (strcmp(t->var.str_value,name)==0)
       return t;
       t = t->next;
   }
-	return NULL;
+  return symbol_find_recursive(symtab->parent, name);
+
+}
+
+
+symbol* symbol_find(char* name) {
+  return symbol_find_recursive(current_symbol_table,name);
 }

@@ -25,8 +25,15 @@ typedef struct symbol {
 } symbol;
 
 
+typedef struct t_symbol_table {
+    struct symbol* symbols;
+    struct symbol_table* child, *parent;
+} t_symbol_table;
 
-symbol* symbol_table;
+
+
+t_symbol_table* root_symbol_table;
+t_symbol_table* current_symbol_table;
 symbol_type* typespec_table;
 symbol_type* reserved_words;
 
@@ -40,6 +47,12 @@ symbol_type* create_symbol_type(t_token var, char* asm_val);
 void define_symbol(symbol* s);
 void define_type(symbol_type* s);
 void define_reserved_word(symbol_type* s);
+
+void push_symbol_table();
+
+void pop_symbol_table();
+
+t_symbol_table* create_symbol_table();
 
 symbol_type* find_type(char* type, symbol_type* parent);
 symbol* symbol_find(char* name);

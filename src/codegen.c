@@ -105,7 +105,7 @@ void visit_define_general(node*n) {
         part("\"");
       part(n->token.large_string);
       if (n->token.is_string)
-        part("\",10");
+        part("\",0");
       ok = true;
     }
   }
@@ -116,11 +116,28 @@ void visit_define_general(node*n) {
   part("\n");
 
 }
+
+
 void visit_call_proc(node* n) {
-  // No parameters yet
-  part("call ");
+
+//  node* proc = find_function(n->token.str_value);
+  node* param = n->left;
+  int no_params = 0;
+  while (param!=NULL) {
+    //printf("JADDA %s\n ",param->token.str_value);
+  //  db("ID ",param->type);
+  
+    codegen_visit(param);
+    as("push rax");
+    no_params++;
+    param = param->right;
+  }
+
+  part("\tcall ");
   part(n->token.str_value);
   part("\n");
+  for (int i=0;i<no_params;i++)
+    as("pop rbx");
 }
 
 
@@ -135,7 +152,35 @@ void visit_var_decl(node* n) {
     visit_var_decl(n->right);
 }
 
+void codegen_load_variable(node* var) {
+  if (var->token.is_reference) {
+    part("\tmov rax, ");
+    part(var->token.str_value);
+    part("\n");
+    return;
+  }
+  part("\tmov rax, [rel ");
+  part(var->token.str_value);
+  part("]\n");
+}
 
+
+void codegen_load_number(node* number) {
+  part("\tmov rax, ");
+ // itoa(var->token.ivalue,&temp_buff,10);
+  sprintf(temp_buffer, "%d", number->token.ivalue);
+  part(temp_buffer);
+  part("\n");
+}
+
+
+void codegen_assign(node* n) {
+//  db("N:",n->block->type);
+  codegen_visit(n->block);
+  part("\tmov [rel ");
+  part(n->left->token.str_value);
+  part("],rax\n");  
+} 
 
 void codegen_visit(node* node)
 {
@@ -158,9 +203,6 @@ void codegen_visit(node* node)
   if (node->type==nt_statement_list) {
 //    db("Statement list!",0);
   }
-  if (node->type==nt_assign) {
-    db("Assignment!",0);
-  }
   // Inline assembler
   if (node->type==nt_asm) {
     int i=0;
@@ -172,6 +214,21 @@ void codegen_visit(node* node)
 
   if (node->type==nt_func) {
     visit_call_proc(node);
+    return;
+  }
+
+  if (node->type==nt_variable) {
+    codegen_load_variable(node);
+    return;
+  }
+
+ if (node->type==nt_number) {
+    codegen_load_number(node);
+    return;
+  }
+
+  if (node->type==nt_assign) {
+    codegen_assign(node);
     return;
   }
 
