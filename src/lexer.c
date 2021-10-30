@@ -59,10 +59,10 @@ char lexer_peek(int n)
     return lexer_source->data[k];
 }
 
+char result[MAX_STRING_SIZE];
 
 t_token lexer_string()
 {
-    char result[MAX_STRING_SIZE];
 		int cur = 0;
     while (!lexer_is_finished && lexer_current_char!='\"') {
         result[cur] = lexer_current_char;
@@ -78,11 +78,14 @@ t_token lexer_string()
     }
     lexer_advance();
 		t_token t = create_token(tt_string, "string",0);
+  //  db("allocating ",cur);
 		t.large_string = malloc(cur);
-		strcpy(t.large_string, result);
-    return t;
+   	strcpy(t.large_string, result);
+//    db(t.large_string, cur);
+	 return t;
 
 }
+
 
 
 t_token get_id()

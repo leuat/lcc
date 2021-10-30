@@ -108,6 +108,18 @@ void visit_define_general(node*n) {
         part("\",0");
       ok = true;
     }
+    else {
+      ok = true;
+      t_token* t = n->token.next;
+      while (t!=NULL) {
+        part(t->str_value);
+        t = t->next;
+        if (t!=NULL) {
+          part(",");
+        }
+      }
+      
+    }
   }
   if (!ok)
     part("0"); // Don't have initvalues

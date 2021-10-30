@@ -2,8 +2,10 @@
 int64 j,k;
 
 
-char message1[]  = "Why hello there why does this cut \n";
-char message2[]  = "This is message #2 \n";
+char message1[]  = "Why hello there why does this cut ";
+char message2[]  = "This is message #2 ";
+
+char str_new_line[] = {10,13,0 };
 
 char *ball;
 
@@ -24,8 +26,6 @@ void exit() {
 void printf(char* msg) {
   
   asm("
-
-
         mov     rdi, [rsp+8]        ; string1 to destination index
         xor     rcx, rcx            ; zero rcx
         not     rcx                 ; set rcx = -1
@@ -44,8 +44,11 @@ void printf(char* msg) {
   ");
 }
 
+void newline() {
+  printf(&str_new_line);
+}
 
-int itoa() {
+int itoa(int64 val, char* data) {
 asm("
 ; Input
 ; EAX = pointer to the int to convert
@@ -53,8 +56,8 @@ asm("
 ; Output:
 ; None
 
-   mov edi, message1
-   mov eax, 128
+   mov edi, [rsp+8]
+   mov eax, [rsp+16]
 
     xor   ebx, ebx        ; clear the ebx, I will use as counter for stack pushes
 .push_chars:
@@ -73,23 +76,22 @@ asm("
     dec rbx               ; decrement my stack push counter
     cmp rbx, 0            ; check if stack push counter is 0
     jg .pop_chars         ; not 0 repeat
-    mov rax, 0x0a
-    stosb                 ; add line feed
 
     mov eax,0
     stosb
-
 ");
 
 }
 
 
 int main() {
-  j = 5;
+  j = 10;
   k=j;
   printf(&message2);  
-  itoa();
+  newline();
+  itoa(j, &message1);
   printf(&message1);  
+  newline();
   exit();
 
 }

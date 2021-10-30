@@ -9,6 +9,7 @@ t_token parser_current_token;
 node* node_root;
 
 bool is_string;
+bool is_array_list;
 
 
 
@@ -48,20 +49,36 @@ void gobble() {
 int parse_const_int() {
   char str[256];
   int pos=0;
+  str[0]=0;
   is_string = false;
-  while (lexer_current_char!=';') {
+  is_array_list = false;
+  while (lexer_current_char!=';' && lexer_current_char!='}') {
     if (lexer_current_char=='\"') {
       is_string = true;
       return -1;
     }
-    if (lexer_current_char!=' ') {
-      str[pos++] = lexer_current_char;
+    if (lexer_current_char=='{') {
+      is_array_list = true;
+      return -1;
+    }
+    
+    if (lexer_current_char!=' ' && lexer_current_char!=',') {
+      str[pos] = lexer_current_char;      
+//      lexer_advance();
+      pos++;
       str[pos]=0;
     }
     lexer_advance();
+    if (lexer_current_char==',') {
+      break;
+    }
+
+
   }
-  while (curt()!=tt_semicolon)
+  while (curt()!=tt_semicolon && curt()!=tt_comma && curt()!=tt_rcbracket)
     gobble();
+
+//  printf("%s\n",str);
 
   return evaluate_int(str);
 }
@@ -469,7 +486,6 @@ node* parse_variable_declaration(node* func_type, t_token name) {
  
   if (curt()==tt_assign) {
 
-
     name.ivalue = parse_const_int();
       if (is_string) {
         parser_eat(tt_assign);
@@ -478,8 +494,30 @@ node* parse_variable_declaration(node* func_type, t_token name) {
         name.is_string = true;
         parser_eat(tt_string);
       }
+      if (is_array_list) {
+//        deb("HERE");
+
+        parser_eat(tt_assign);
+        bool done = false;
+//        parser_eat(tt_lcbracket);
+
+        t_token* cur = &name;
+        
+        while (curt()!=tt_rbracket && lexer_current_char!='}') {
+          int val = parse_const_int();
+          sprintf(temp_buffer, "%d", val);
+          t_token* t = create_dynamic_token(tt_integer_const,temp_buffer,val);
+          cur->next = t;
+          cur = cur->next;
+        }
+        while (curt()!=tt_rcbracket)
+          gobble();
+        parser_eat(tt_rcbracket);
+      }
   
   }
+
+
 
 
   node* decl = create_node(nt_var_decl,name);

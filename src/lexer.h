@@ -23,6 +23,7 @@ bool lexer_is_finished;
 extern t_buffer* lexer_source;
 
 
+t_token lexer_array_list();
 
 void lexer_initialise(t_buffer* buf);
 

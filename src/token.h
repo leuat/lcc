@@ -15,7 +15,7 @@ typedef enum {tt_id, tt_lcbracket,tt_rcbracket,tt_lparen,tt_rparen,tt_lbracket, 
 
 extern char *string_token_type[];
 
-typedef struct {
+typedef struct t_token {
 	enum_token_type type;
 	char str_value[TOKEN_MAX_SIZE];
 	char* large_string;
@@ -25,9 +25,11 @@ typedef struct {
     int array_count;
 	int line_number;
 	bool is_reference;
+	struct t_token *next;
 } t_token;
 
 t_token create_token(enum_token_type type, char* str_value, int i_value);
+t_token* create_dynamic_token(enum_token_type type, char* str_value, int i_value);
 
 
 

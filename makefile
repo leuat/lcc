@@ -1,7 +1,8 @@
 TARGET = lcc
 
 CC = gcc
-CFLAGS =  -Os -s -Wfatal-errors  -fno-stack-protector  -fno-unwind-tables -fno-asynchronous-unwind-tables  -fno-math-errno  -fno-unroll-loops
+#CFLAGS =  -Os -s -Wfatal-errors  -fno-stack-protector  -fno-unwind-tables -fno-asynchronous-unwind-tables  -fno-math-errno  -fno-unroll-loops
+CFLAGS =  -g -s -Wfatal-errors  -fno-stack-protector  -fno-unwind-tables -fno-asynchronous-unwind-tables  -fno-math-errno  -fno-unroll-loops
 
 OUTDIR = bin
 DATADIR = data

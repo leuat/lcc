@@ -17,12 +17,12 @@ int compile(char* filename) {
 		raise_error_p1("Could not open file: ",filename);
 		return 1;
 	}
+	printf("Parsing..\n");
 	parse(&file);
-
-	release_buffer(&file);
 
 	codegen_init();
 
+	printf("Code generation..\n");
 	codegen_visit(node_root);
 
 	assembler_save("a.asm");

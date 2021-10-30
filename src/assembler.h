@@ -4,7 +4,7 @@
 #include "util.h"
 
 // 100k chars max. make this dynamic later
-#define MAX_ASM_LENGTH 100000
+#define MAX_ASM_LENGTH 20000
 
 extern t_buffer main_block;
 extern t_buffer proc_block;
