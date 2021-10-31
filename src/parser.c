@@ -245,7 +245,7 @@ node* parse_assignstatement() {
 
 
 node* inline_assembler() {
-  parser_eat(tt_asm);
+  parser_eat(tt_asm);uio kompilator
   parser_eat(tt_lparen);
   t_token cmd = parser_current_token;
   parser_eat(tt_string);
