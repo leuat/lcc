@@ -23,6 +23,8 @@ void deb(char* s) {
 enum_token_type curt() {
   return parser_current_token.type;
 }
+// fwd
+node* parse_expr();
 
 void parser_eat(enum_token_type t)
 {
@@ -107,10 +109,17 @@ node* parse_variable() {
     raise_error_p1("undefined variable : ",parser_current_token.str_value);
 
   gobble();
+
+  if (curt()==tt_lbracket) {
+    gobble();
+    node* expr = parse_expr();
+    parser_eat(tt_rbracket);
+    n->center = expr;
+  }
 //  printf("Creating variable:%s\n",n->token.str_value);
+//  deb(n->token.str_value);
   return n;
 }
-
 
 
 node* parse_factor()
@@ -161,15 +170,12 @@ node* parse_factor()
     }
     */
 
-/*
-    if (t.m_type == TokenType::LPAREN) {
-        Eat(TokenType::LPAREN);
-        QSharedPointer<Node> node = Expr();
-        Eat(TokenType::RPAREN);
-        return node;
-
+    if (curt() == tt_lparen) {
+      gobble();
+      node* n = parse_expr();
+      parser_eat(tt_rparen);
+      return n;      
     }
-    */
     if (t.type == tt_id) {
 //        qDebug() << "FINDING PROCEDURE IN TERM: " << t.m_value;
         bool isAssign;
@@ -189,19 +195,21 @@ node* parse_factor()
 
 
 node* parse_term() {
-  node* n = parse_factor();/*
-while (m_currentToken.m_type == TokenType::Type::MUL || m_currentToken.m_type == TokenType::Type::DIV
-|| m_currentToken.m_type == TokenType::Type::BITAND || m_currentToken.m_type == TokenType::Type::BITOR
- || m_currentToken.m_type == TokenType::Type::SHR || m_currentToken.m_type == TokenType::Type::SHL
-       || m_currentToken.m_type == TokenType::Type::XOR
+  node* n = parse_factor();
+  
+  while (curt() == tt_plus || 
+        curt() == tt_minus ||
+        curt() == tt_mul ||
+        curt() == tt_div) {
+          t_token t = parser_current_token;
+          gobble();          
+          node* bop = create_node(nt_binop, t);// QSharedPointer<NodeBinOP>(new NodeBinOP(node, t, Factor()));
+          bop->left = n;
+          bop->block = parse_factor();
+          n = bop;
+        }
 
-       ){
-    Token t = m_currentToken;
-    Eat(m_currentToken.m_type);
 
-    node = QSharedPointer<NodeBinOP>(new NodeBinOP(node, t, Factor()));
-}
-*/
 return n;
 
 }
@@ -209,26 +217,21 @@ return n;
 
 node* parse_expr() {
   node* n = parse_term();
-
-/*
-
-  while (m_currentToken.m_type == TokenType::Type::PLUS || m_currentToken.m_type == TokenType::Type::MINUS
-          || m_currentToken.m_type == TokenType::Type::BITAND || m_currentToken.m_type == TokenType::Type::BITOR) {
-      Token t = m_currentToken;
-
-      Eat(m_currentToken.m_type);
-
-      node = QSharedPointer<NodeBinOP>(new NodeBinOP(node, t, Term()));
+  while (curt()==tt_plus || curt()==tt_minus || curt()==tt_bitand || curt()==tt_bitor) {
+    t_token t = parser_current_token;
+    gobble();
+    node* bop = create_node(nt_binop, t);// QSharedPointer<NodeBinOP>(new NodeBinOP(node, t, Factor()));
+    bop->left = n;
+    bop->block = parse_term();
+    n = bop;
 
   }
-*/
 
   return n;
 }
 
 node* parse_assignstatement() {
   node* left = parse_variable();
-
   if (curt() != tt_assign) {
     raise_error_p1("error assigning variable ",left->token.str_value);
   }
@@ -245,7 +248,7 @@ node* parse_assignstatement() {
 
 
 node* inline_assembler() {
-  parser_eat(tt_asm);uio kompilator
+  parser_eat(tt_asm);
   parser_eat(tt_lparen);
   t_token cmd = parser_current_token;
   parser_eat(tt_string);
@@ -284,9 +287,13 @@ node* parse_function_parameters(node* func) {
 node* parse_call_function() {
   node* func = find_function(parser_current_token.str_value);
   t_token name = parser_current_token;
-  if (func == NULL)
+  if (func == NULL) 
     return NULL;
+
+//  deb(func->token.str_value);
+
   gobble();
+
   parser_eat(tt_lparen);
   int count = 0;
   node* params = parse_function_parameters(func);
@@ -308,6 +315,8 @@ node* parse_statement() {
     else if (curt() == tt_id) {
 //        bool isAssign;
         n = parse_call_function();
+////        if (n!=NULL)
+//          db("START ",parser_current_token.type);
 
 /*        node = FindProcedure(isAssign, nullptr);
         if (isAssign) {
@@ -441,7 +450,7 @@ node* parse_declare_function(node* func_type, t_token name) {
 
 
   node* block = parse_block();
-
+  
   node* proc = create_node(nt_func_decl, name);
 
   proc->token.ivalue = count;
@@ -528,6 +537,8 @@ node* parse_variable_declaration(node* func_type, t_token name) {
 
 
   symbol_type* type = find_type(func_type->token.str_value,typespec_table);
+  if (name.is_pointer)
+   type = find_type("pointer",typespec_table);
 //  printf("FOUND TYPE: %s\n",type->type.str_value);
   define_symbol(create_symbol(name,type));
 

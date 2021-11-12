@@ -9,7 +9,7 @@
 
 typedef enum {tt_id, tt_lcbracket,tt_rcbracket,tt_lparen,tt_rparen,tt_lbracket, tt_rbracket, tt_semicolon,
 								tt_integer_const, tt_eof,tt_int,tt_char,tt_assign, tt_equals,tt_comma, tt_asm, tt_string,
-							tt_asterisk, tt_long, tt_int64} enum_token_type;
+							tt_asterisk, tt_long, tt_int64,tt_plus, tt_minus, tt_mul, tt_div, tt_bitor, tt_bitand, tt_pointer} enum_token_type;
 
 
 

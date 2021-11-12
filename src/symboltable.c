@@ -66,10 +66,12 @@ void initialize_symboltable() {
   typespec_table = NULL;
 
   define_type( create_symbol_type(create_token(tt_id,"void",0),""));
-  define_type( create_symbol_type(create_token(tt_int,"int",0),"dw"));
-  define_type( create_symbol_type(create_token(tt_char,"char",0),"db"));
-  define_type( create_symbol_type(create_token(tt_long,"long",0),"dd"));
-  define_type( create_symbol_type(create_token(tt_int64,"int64",0),"dq"));
+  define_type( create_symbol_type(create_token(tt_int,"int",0),"uint16"));
+  define_type( create_symbol_type(create_token(tt_char,"char",0),"uint8"));
+  define_type( create_symbol_type(create_token(tt_long,"long",0),"uint32"));
+  define_type( create_symbol_type(create_token(tt_int64,"int64",0),"uint64"));
+
+  define_type( create_symbol_type(create_token(tt_pointer,"pointer",0),"uint16"));
 
 
   define_reserved_word( create_symbol_type(create_token(tt_asm,"asm",0),""));

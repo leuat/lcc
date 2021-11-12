@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "error.h"
 #include "symboltable.h"
+#include "util.h"
 
 t_buffer* lexer_source = 0;
 bool next_is_reference = false;
@@ -37,6 +38,7 @@ void lexer_advance() {
 
 
     }
+//    printf("%c",lexer_current_char);
 		/*
 		char str[2];
 		str[0] = lexer_current_char;
@@ -142,7 +144,28 @@ t_token lexer_get_next_token() {
             return lexer_string();
         }
 //        printf("%c",lexer_current_char);
+
+				if (lexer_current_char=='/') {
+            lexer_advance();
+            return create_token(tt_div,"/",0);
+        }
+				if (lexer_current_char=='+') {
+            lexer_advance();
+            return create_token(tt_plus,"+",0);
+        }
+				if (lexer_current_char=='-') {
+            lexer_advance();
+            return create_token(tt_minus,"-",0);
+        }
 				if (lexer_current_char=='*') {
+          temp_buffer[0] = lexer_peek(1);
+          temp_buffer[1] = 0; 
+            if (is_digit(temp_buffer)) {
+//              sprintf("next : %c \n",lexer_peek(1));
+              lexer_advance();
+              return create_token(tt_mul,"*",0);
+
+            }          
             lexer_advance();
             return create_token(tt_asterisk,"*",0);
         }

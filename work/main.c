@@ -5,6 +5,8 @@ int64 j,k;
 char message1[]  = "Why hello there why does this cut ";
 char message2[]  = "This is message #2 ";
 
+char str_new_line[] = {10,13,0 };
+
 char *ball;
 
 
@@ -42,19 +44,61 @@ void printf(char* msg) {
         mov       rsi, [rsp+8]            ; address of string to output
 
         syscall                           ; invoke operating system to do the write
-      ;      mov       rax, 60                 ; system call for exit
-        mov       rax, 0x02000001         ; system call for exit
-        xor       rdi, rdi                ; exit code 0
-        syscall                           ; invoke operating system to exit
   ");
+}
+
+void newline() {
+  printf(&str_new_line);
+}
+
+int itoa(int64 val, char* data) {
+
+  val = 20;
+
+  asm("
+; EAX = pointer to the int to convert
+; EDI = address of the result
+
+   mov rdi, [rsp+8]
+   mov rax, [rsp+16]
+    xor   ebx, ebx        ; clear the ebx, I will use as counter for stack pushes
+.push_chars:
+    xor rdx, rdx          ; clear edx
+    mov rcx, 10           ; ecx is divisor, devide by 10
+    div rcx               ; devide edx by ecx, result in eax remainder in edx
+    add rdx, 0x30         ; add 0x30 to edx convert int => ascii
+    push rdx              ; push result to stack
+    inc rbx               ; increment my stack push counter
+    test rax, rax         ; is eax 0?
+    jnz .push_chars       ; if eax not 0 repeat
+
+.pop_chars:
+    pop rax               ; pop result from stack into eax
+    stosb                 ; store contents of eax in at the address of num which is in EDI
+    dec rbx               ; decrement my stack push counter
+    cmp rbx, 0            ; check if stack push counter is 0
+    jg .pop_chars         ; not 0 repeat
+
+    mov eax,0
+    stosb
+");
+
 }
 
 
 int main() {
-  j = 5;
+  j = 10;
   k=j;
+  printf(&message2);  
+  
+  newline();
+
+  itoa(j, &message1);
+
   printf(&message1);  
 
+  newline();
+  
   exit();
 
 }

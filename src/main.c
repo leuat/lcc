@@ -5,6 +5,7 @@
 #include "parser.h"
 #include "codegen.h"
 #include "a_eval.h"
+#include <string.h>
 
 void print_usage() {
 	printf("lcc fatal error: no input files. \n");
@@ -47,6 +48,21 @@ int main(int argc, char *argv[]) {
 	if (argc==0) {
 		print_usage();
 		return 1;
+	}
+
+	if (argc>2) {
+		for (int i=2;i<argc;i++) {
+			if (strcmp(argv[i],"-system")==0) {
+				if (strcmp(argv[i+1],"c64")==0)
+					current_system = system_c64;
+				else
+				if (strcmp(argv[i+1],"amd64")==0)
+					current_system = system_c64;
+				else
+					raise_error_p1("Unknown system: ",argv[i+1]);
+				i+=1;	
+			}
+		}		
 	}
 
 	if (compile(argv[1])==0)
