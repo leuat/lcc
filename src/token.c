@@ -3,9 +3,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-char* string_token_type[] = {"id","{","}","(",")","[","]",";","integer_const","eof",
-"int","char","=","==",",","asm","string","+","-","*","/","|","&","pointer"};
+char* string_token_type[] = {"id","{","}","(",")","[","]",";",
+		"integer_const","eof","int","char","=","==",",","asm",
+		"string","*","long","int64","+","-","*","/",
+		"|","&","pointer","if","else",">","<","!=",
+		"++","--","for"};
 
+const int plusplus_post = 1;
+const int plusplus_pre = 2;
+const int minusminus_post = 3;
+const int minusminus_pre = 4;
 
 
 t_token create_token(enum_token_type type, char* str_value, int i_value) {

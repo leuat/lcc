@@ -109,17 +109,6 @@ t_token get_id()
 			return st->type;
 		}
 
-  //  return Syntax::s.GetID(result,isRef);
-/*
-		QString org = val;
-
-	for (Token& t: reserved_words)
-			if (val.toUpper()==t.m_value) {
-					t.m_lineNumber = Pmm::Data::d.lineNumber;
-					return t;
-			}
-*/
-	//exit(1);
 	t_token t = create_token(tt_id,result,0);
 	t.is_reference = is_ref;
 	return t;
@@ -145,10 +134,29 @@ t_token lexer_get_next_token() {
         }
 //        printf("%c",lexer_current_char);
 
+				if (lexer_current_char=='>') {
+            lexer_advance();
+            return create_token(tt_gt,">",0);
+        }
+				if (lexer_current_char=='<') {
+            lexer_advance();
+            return create_token(tt_lt,"<",0);
+        }
 				if (lexer_current_char=='/') {
             lexer_advance();
             return create_token(tt_div,"/",0);
         }
+        if (lexer_current_char=='+' && lexer_peek(1)=='+') {
+            lexer_advance();
+            lexer_advance();
+            return create_token(tt_plus_plus,"++",0);
+        }
+        if (lexer_current_char=='-' && lexer_peek(1)=='-') {
+            lexer_advance();
+            lexer_advance();
+            return create_token(tt_minus_minus,"--",0);
+        }
+
 				if (lexer_current_char=='+') {
             lexer_advance();
             return create_token(tt_plus,"+",0);
@@ -212,6 +220,11 @@ t_token lexer_get_next_token() {
             lexer_advance();
 						lexer_advance();
             return create_token(tt_equals,"==",0);
+        }
+				if (lexer_current_char=='!' && lexer_peek(1)=='=') {
+            lexer_advance();
+						lexer_advance();
+            return create_token(tt_not_equals,"!=",0);
         }
 				if (lexer_current_char=='&') {
 					lexer_advance();
@@ -278,7 +291,12 @@ t_token lexer_number(bool* isOk)
 		*/
 		char * pEnd;
 		*isOk = true;
- 	  val = strtol (res,&pEnd,10);
+    if (res[0]=='0' && res[1]=='x') {
+      base = 16;
+      res[0] = ' ';
+      res[1] = ' ';
+    }
+ 	  val = strtol (res,&pEnd,base);
 		if (pEnd==NULL)
 			*isOk = false;
 //    val = atoi(res);

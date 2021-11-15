@@ -8,12 +8,20 @@
 
 
 typedef enum {tt_id, tt_lcbracket,tt_rcbracket,tt_lparen,tt_rparen,tt_lbracket, tt_rbracket, tt_semicolon,
-								tt_integer_const, tt_eof,tt_int,tt_char,tt_assign, tt_equals,tt_comma, tt_asm, tt_string,
-							tt_asterisk, tt_long, tt_int64,tt_plus, tt_minus, tt_mul, tt_div, tt_bitor, tt_bitand, tt_pointer} enum_token_type;
+			tt_integer_const, tt_eof,tt_int,tt_char,tt_assign, tt_equals,tt_comma, tt_asm, 
+			tt_string, tt_asterisk, tt_long, tt_int64,tt_plus, tt_minus, tt_mul, tt_div, 
+			tt_bitor, tt_bitand, tt_pointer, tt_if, tt_else,tt_gt,tt_lt, tt_not_equals,
+			tt_plus_plus, tt_minus_minus, tt_for} enum_token_type;
 
 
 
 extern char *string_token_type[];
+
+extern const int plusplus_post;
+extern const int plusplus_pre;
+extern const int minusminus_post;
+extern const int minusminus_pre;
+
 
 typedef struct t_token {
 	enum_token_type type;

@@ -75,6 +75,9 @@ void initialize_symboltable() {
 
 
   define_reserved_word( create_symbol_type(create_token(tt_asm,"asm",0),""));
+  define_reserved_word( create_symbol_type(create_token(tt_if,"if",0),""));
+  define_reserved_word( create_symbol_type(create_token(tt_else,"else",0),""));
+  define_reserved_word( create_symbol_type(create_token(tt_for,"for",0),""));
 
 }
 

@@ -9,6 +9,7 @@ node* create_node(node_type nt, t_token tok) {
   n->left = NULL;
   n->center = NULL;
   n->block = NULL;
+  n->extra = NULL;
   n->symtab = NULL;
   n->value = 0;
   return n;

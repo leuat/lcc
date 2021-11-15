@@ -11,6 +11,7 @@ node* node_root;
 bool is_string;
 bool is_array_list;
 
+bool next_is_assign = false;
 
 
 void deb(char* s) {
@@ -25,6 +26,7 @@ enum_token_type curt() {
 }
 // fwd
 node* parse_expr();
+node* parse_for_loop();
 
 void parser_eat(enum_token_type t)
 {
@@ -110,11 +112,22 @@ node* parse_variable() {
 
   gobble();
 
+
   if (curt()==tt_lbracket) {
     gobble();
     node* expr = parse_expr();
     parser_eat(tt_rbracket);
     n->center = expr;
+  }
+  if (curt()==tt_plus_plus || curt()==tt_minus_minus) {
+      if (curt()==tt_plus_plus)
+        n->token.ivalue = plusplus_post;
+      else
+      if (curt()==tt_minus_minus)
+        n->token.ivalue = minusminus_post;
+
+      gobble();
+      
   }
 //  printf("Creating variable:%s\n",n->token.str_value);
 //  deb(n->token.str_value);
@@ -217,13 +230,25 @@ return n;
 
 node* parse_expr() {
   node* n = parse_term();
-  while (curt()==tt_plus || curt()==tt_minus || curt()==tt_bitand || curt()==tt_bitor) {
+  while (curt()==tt_plus || curt()==tt_minus || curt()==tt_bitand || curt()==tt_bitor 
+    || curt()==tt_gt || curt() == tt_lt || curt() == tt_equals || curt() == tt_not_equals
+  ) {
     t_token t = parser_current_token;
     gobble();
-    node* bop = create_node(nt_binop, t);// QSharedPointer<NodeBinOP>(new NodeBinOP(node, t, Factor()));
+    node_type nt = nt_binop;
+    if (t.type == tt_gt || t.type==tt_lt) {
+      if (next_is_assign)
+        nt = nt_clause_expr;
+      else
+        nt = nt_clause;
+    }
+
+    node* bop = create_node(nt, t);
     bop->left = n;
     bop->block = parse_term();
     n = bop;
+
+
 
   }
 
@@ -231,7 +256,16 @@ node* parse_expr() {
 }
 
 node* parse_assignstatement() {
+  next_is_assign = true;
   node* left = parse_variable();
+
+ if (curt()==tt_semicolon || curt()==tt_rparen) {
+    node* assign = create_node(nt_assign, parser_current_token);
+   return left;
+ }
+
+
+
   if (curt() != tt_assign) {
     raise_error_p1("error assigning variable ",left->token.str_value);
   }
@@ -305,9 +339,31 @@ node* parse_call_function() {
   return call;
 }
 
+bool prev_was_block = false;
+
+
+node* parse_conditional() {
+  next_is_assign = false;
+  node* cond = create_node(nt_conditional,parser_current_token);
+  parser_eat(tt_if);
+  node* clause = parse_expr();
+  cond->center = clause;
+  cond->block = parse_block();
+  if (curt()==tt_else) {
+    gobble();
+    cond->left = parse_block();
+  }
+  prev_was_block = true;  
+
+  return cond;
+}
+
+
+
 
 node* parse_statement() {
 //  printf("Parsing statement : %s\n","nada");
+  prev_was_block = false;  
   node* n = NULL;
     if (curt() == tt_lcbracket) {
         n = parse_block();
@@ -315,14 +371,8 @@ node* parse_statement() {
     else if (curt() == tt_id) {
 //        bool isAssign;
         n = parse_call_function();
-////        if (n!=NULL)
-//          db("START ",parser_current_token.type);
 
-/*        node = FindProcedure(isAssign, nullptr);
-        if (isAssign) {
-            return Empty();
-        }
-        if (node==nullptr)
+/*      if (node==nullptr)
             node = BuiltinFunction();
 */
         if (n==NULL)
@@ -334,6 +384,12 @@ node* parse_statement() {
     else
     if (curt() == tt_asm) {
       return inline_assembler();
+    }
+    else if (curt() == tt_if) {
+        return parse_conditional();
+    }
+    else if (curt() == tt_for) {
+        return parse_for_loop();
     }
 
     /*
@@ -393,6 +449,23 @@ node* parse_statement() {
 
 }
 
+node* parse_for_loop() {
+  node* for_loop = create_node(nt_for,parser_current_token);
+  parser_eat(tt_for);
+  parser_eat(tt_lparen);
+  for_loop->left = parse_statement();
+  parser_eat(tt_semicolon);
+  for_loop->center = parse_expr();
+  parser_eat(tt_semicolon);
+  for_loop->extra = parse_statement();
+//  parser_eat(tt_semicolon);
+  parser_eat(tt_rparen);
+ 
+  for_loop->block = parse_block();
+  
+  return for_loop;
+}
+
 
 
 
@@ -401,12 +474,14 @@ node* parse_statementlist() {
   node* s = parse_statement();
   results->right = s;
 
+
   // attatch statements
-  while (parser_current_token.type==tt_semicolon) {
+  while (parser_current_token.type == tt_semicolon || prev_was_block) {
+    if (!prev_was_block)
       parser_eat(tt_semicolon);
-      node* cur = s;
-      s = parse_statement();
-      cur->right = s;
+    node* cur = s;
+    s = parse_statement();
+    cur->right = s;
 
   }
   if (parser_current_token.type==tt_id)
@@ -493,6 +568,7 @@ node* parse_variable_declaration(node* func_type, t_token name) {
 //  printf("OH NOES parse declaration not implemented yet");
  parse_array_or_pointer(&name); // * or [] 
  
+
   if (curt()==tt_assign) {
 
     name.ivalue = parse_const_int();

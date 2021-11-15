@@ -4,13 +4,35 @@
 #include "error.h"
 bool has_main = false;
 
+#define N 64
 
 int current_register = 0;
 
 symbol* current_symbol = NULL;
 
+int current_label=0;
+char current_label_str[N];
+char cur_default_int_type[N] = "uint8";
 
-char* current_register_str[4]; 
+
+char* get_int(int i) {
+  sprintf(temp_buffer,"%s:%d",cur_default_int_type,i);
+  return temp_buffer;
+}
+
+
+void push_label() {
+  sprintf(current_label_str, "label_%d", current_label++);
+}
+
+void pop_label() {
+  if (current_label==0) 
+    raise_error("Cannot pop label back from zero.");
+  sprintf(current_label_str, "_r%d", --current_label);
+}
+
+
+char current_register_str[4]; 
 
 
 void push_reg() {
@@ -113,9 +135,7 @@ void visit_define_general(node*n) {
 
   symbol* s = symbol_find(n->token.str_value);
   if (n->token.is_pointer) {
-      part("\tdeclptr ");
-      part(n->token.str_value);
-      part("\tuint16:0\n");
+      str_doublet("declptr",n->token.str_value,"uint16:0");
 
     return;
   }
@@ -222,35 +242,34 @@ void tripe_val(node* n2, char* v) {
   }
   if (n->type==nt_variable) {
     strcpy(v,n->token.str_value);
+    if (n->token.ivalue == plusplus_post) 
+        str_triplet("add",n->token.str_value,n->token.str_value,get_int(1));
+    if (n->token.ivalue == minusminus_post) 
+        str_triplet("sub",n->token.str_value,n->token.str_value,get_int(1));
+
   }
 }
 
 
 void doublet(node* a, node* b, char* cmd)
 {
-      char l[128] = "";
-    char r[128] = "";
-    char idx[128] = "";
+      char l[N] = "";
+    char r[N] = "";
+    char idx[N] = "";
 
 
     tripe_val(a,l);
     tripe_val(b,r);
 
-    part("\t");
-    part(cmd);
-    part("\t");
-    part(l);
-    part("\t");
-    part(r);
-    part("\n");
+    str_doublet(cmd,l,r);
 
 }
 
 void triplet(node* a, node* i, node* b, char* cmd)
 {
-    char l[128] = "";
-    char r[128] = "";
-    char idx[128] = "";
+    char l[N] = "";
+    char r[N] = "";
+    char idx[N] = "";
 
     push_reg();
     tripe_val(i,idx);
@@ -275,30 +294,25 @@ void triplet(node* a, node* i, node* b, char* cmd)
 
 void codegen_load_variable(node* var) {
 
+  if (var->token.ivalue!=0) { // ++ or --
+    if (var->center!=NULL) raise_error("lcc does not yet support ++ -- on arrays");
+    if (var->token.ivalue == plusplus_post) 
+        str_triplet("add",var->token.str_value,var->token.str_value,get_int(1));
+    if (var->token.ivalue == minusminus_post) 
+        str_triplet("sub",var->token.str_value,var->token.str_value,get_int(1));
+
+  }
+
+
   if (var->center!=NULL) { // has index
-      char iddx[128];
-      char r0[128];
+      char iddx[N];
+      char r0[N];
       push_reg();
       tripe_val(var->center, iddx);
-      part("\tload_p ");
-      part(current_register_str);
-      part("\t");
-      part(var->token.str_value);
-      part("\t");
-      part(iddx);
-      part("\n");
+      str_triplet("load_p",current_register_str,var->token.str_value,iddx);
       return;
     }
-
-  //raise_error("codegen_load_variable should be called");
-/*
-  if (var->block!=NULL) {
-    tripe_val(var->block,l);
-    if (var->token.is_pointer) {
-//      doublet()
-    }
-  }
-*/
+ 
 }
 
 
@@ -314,9 +328,6 @@ void codegen_assign(node* n) {
 
   current_symbol = symbol_find(n->left->token.str_value);
 
-//     doublet(n->left, n->block, "mov");
-
-//  db(n->left->token.str_value,0);
     n->left->value = -1; // flag as STORE type
     if (n->left->center==NULL)
      doublet(n->left, n->block, "mov");
@@ -327,19 +338,160 @@ void codegen_assign(node* n) {
 
 } 
 
+char* get_binop(node* n) {
+  if (n->token.type == tt_plus)  
+    return "add";
+  if (n->token.type == tt_minus)  
+    return "sub";
+  if (n->token.type == tt_mul)  
+    return "mulu";
+  if (n->token.type == tt_div)  
+    return "divu";
+
+  return "[unknown binop]";
+}
+/*
+bool are_same_vars(node*a , node* b) {
+  if (!(a->type == nt_variable && b->type==nt_variable))
+    return false; 
+
+//  db(a->token.str_value,0);
+//  db(b->token.str_value,0);
+
+  if (strcmp(a->token.str_value,b->token.str_value)==0)
+    return true;
+    
+  return false;
+}
+*/
 void codegen_binop(node* node) {
   char cmd[10];
-  push_reg();
-  if (node->token.type == tt_plus)  
-    sprintf(cmd,"add %s ",current_register_str);
-  if (node->token.type == tt_minus)  
-    sprintf(cmd,"sub %s ",current_register_str);
-  if (node->token.type == tt_mul)  
-    sprintf(cmd,"mulu %s ",current_register_str);
-  if (node->token.type == tt_div)  
-    sprintf(cmd,"divu %s ",current_register_str);
 
+/*  if (node->block->left!=NULL)
+  if (are_same_vars(node->left,node->block->left)) {
+    sprintf(cmd,"%s %s ",get_binop(node),node->left->token.str_value);
     doublet(node->left, node->block, cmd);
+    db("ARE SAME ",0);
+    return;
+  }
+*/
+
+
+  push_reg();
+  sprintf(cmd,"%s %s ",get_binop(node),current_register_str);
+  doublet(node->left, node->block, cmd);
+}
+
+
+char* get_branch(enum_token_type t, bool inv) {
+  if (!inv) {
+  if (t==tt_gt){
+    return "bgtu";
+  }
+  if (t==tt_lt){
+    return "bltu";
+  }
+  if (t==tt_equals){
+    return "bne";
+  }
+  if (t==tt_not_equals){
+    return "beq";
+  }
+  }
+  if (inv) {
+    if (t==tt_lt){
+      return "bgtu";
+    }
+    if (t==tt_gt){
+      return "bltu";
+    }
+    if (t==tt_not_equals){
+      return "bne";
+    }
+    if (t==tt_equals){
+      return "beq";
+    }
+      
+  }
+  return "[uknown branch]";
+}
+
+
+
+void visit_binary_clause(node* n, char* block, char* els, char* done, bool inv) {
+    push_reg();
+    push_label();
+    doublet(n->left, n->block,"cmp");
+    str_doublet(get_branch(n->token.type,inv),els,"");
+
+}
+
+
+void visit_conditional(node* n) {
+  char lbl_done[N];
+  char lbl_else[N];
+  char lbl_block[N];
+
+  push_label();
+  strcpy(lbl_done,current_label_str);
+  push_label();
+  strcpy(lbl_else,current_label_str);
+  push_label();
+  strcpy(lbl_block,current_label_str);
+
+  visit_binary_clause(n->center, lbl_block, lbl_else, lbl_done, false);
+  lbll(lbl_block);
+  codegen_visit(n->block);
+
+  if (n->left != NULL) // else block
+   str_doublet("jump",lbl_done,"");
+
+  lbll(lbl_else);
+
+  if (n->left != NULL)
+    codegen_visit(n->left);
+
+  lbll(lbl_done);
+}
+
+
+
+
+void visit_binary_clause_expr(node* n) {
+    push_reg();
+    push_label();
+    str_doublet("mov",current_register_str, get_int(0));
+
+    doublet(n->left, n->block,"cmp");
+    push_label();
+    str_doublet(get_branch(n->token.type,false),current_label_str,"");
+    str_doublet("mov",current_register_str, get_int(1));
+
+    lbll(current_label_str);
+
+   // d(n->left, n->block,"bne");
+
+}
+
+
+void visit_for_loop(node* n) {
+  // For loop!
+    comment("for loop");
+    push_label();
+    char lbl[N];
+    strcpy(lbl,current_label_str);
+    codegen_visit(n->left); //  i = 0;
+    lbll(lbl); // define top label
+
+    codegen_visit(n->block); // Main block
+
+
+    codegen_visit(n->extra); //  i++;
+
+//    codegen_visit(n->center); //  i<10;
+    visit_binary_clause(n->center, "", lbl, "", true);
+    pop_reg();
+
 }
 
 
@@ -359,6 +511,14 @@ void codegen_visit(node* node)
     visit_proc_decl(node);
     return;
   }
+  if (node->type == nt_block) {
+    visit_block(node);
+    return;
+  }
+  if (node->type == nt_for) {
+    visit_for_loop(node);
+    return;
+  }
   if (node->type==nt_statement_list) {
 //    db("Statement list!",0);
   }
@@ -373,6 +533,14 @@ void codegen_visit(node* node)
 
   if (node->type==nt_func) {
     visit_call_proc(node);
+    return;
+  }
+  if (node->type==nt_clause_expr) {
+    visit_binary_clause_expr(node);
+    return;
+  }
+  if (node->type==nt_conditional) {
+    visit_conditional(node);
     return;
   }
 

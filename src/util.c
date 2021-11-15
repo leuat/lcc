@@ -6,7 +6,7 @@
 
 const char digit[] = "0123456789$%";
 
-const char digit_all[] = "0123456789$%ABCDEFabcdef";
+const char digit_all[] = "0123456789$%ABCDEFabcdefx";
 
 const char alpha[] = "abcdefghijklmnopqrstuvwxyz_";
 

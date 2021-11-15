@@ -57,6 +57,33 @@ void assembler_cleanup() {
 void lbl(char* str) {
   write(str,0);
 }
+void lbll(char* str) {
+  part(".label ");
+  part(str);
+  part("\n");
+}
+
+void str_doublet(char* a, char* b, char* c) {
+  part("\t");
+  part(a);
+  part("\t");
+  part(b);
+  part("\t");
+  part(c);
+  part("\n");
+}
+void str_triplet(char* a, char* b, char* c, char* d) {
+  part("\t");
+  part(a);
+  part("\t");
+  part(b);
+  part("\t");
+  part(c);
+  part("\t");
+  part(d);
+  part("\n");
+}
+
 void as(char* str) {
   write(str,1);
 }
