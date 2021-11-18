@@ -27,6 +27,7 @@ enum_token_type curt() {
 // fwd
 node* parse_expr();
 node* parse_for_loop();
+node* parse_while_loop();
 
 void parser_eat(enum_token_type t)
 {
@@ -391,6 +392,9 @@ node* parse_statement() {
     else if (curt() == tt_for) {
         return parse_for_loop();
     }
+    else if (curt() == tt_while) {
+        return parse_while_loop();
+    }
 
     /*
     else if (parser_current_token.type == TokenType::ADDRESS) {
@@ -464,6 +468,16 @@ node* parse_for_loop() {
   for_loop->block = parse_block();
   
   return for_loop;
+}
+
+node* parse_while_loop() {
+  node* while_loop = create_node(nt_while,parser_current_token);
+  parser_eat(tt_while);
+  while_loop->left = parse_expr();
+ 
+  while_loop->block = parse_block();
+  
+  return while_loop;
 }
 
 

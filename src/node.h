@@ -8,7 +8,7 @@
 
 typedef enum { nt_variable, nt_number, nt_func_decl, nt_func, nt_var_decl, nt_type_spec,
               nt_block, nt_root, nt_statement, nt_statement_list, nt_assign, nt_asm, nt_binop,
-              nt_conditional, nt_clause, nt_clause_expr, nt_for,
+              nt_conditional, nt_clause, nt_clause_expr, nt_for, nt_while
             } node_type;
 
 

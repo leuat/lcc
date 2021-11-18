@@ -494,6 +494,20 @@ void visit_for_loop(node* n) {
 
 }
 
+void visit_while_loop(node* n) {
+  // For loop!
+    comment("while loop");
+    push_label();
+    char lbl[N];
+    strcpy(lbl,current_label_str);
+    lbll(lbl); // define top label
+    codegen_visit(n->block); //  i = 0;
+
+    visit_binary_clause(n->left, "", lbl, "", true);
+    pop_reg();
+
+}
+
 
 void codegen_visit(node* node)
 {
@@ -517,6 +531,10 @@ void codegen_visit(node* node)
   }
   if (node->type == nt_for) {
     visit_for_loop(node);
+    return;
+  }
+  if (node->type == nt_while) {
+    visit_while_loop(node);
     return;
   }
   if (node->type==nt_statement_list) {

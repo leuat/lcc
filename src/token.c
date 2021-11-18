@@ -7,7 +7,7 @@ char* string_token_type[] = {"id","{","}","(",")","[","]",";",
 		"integer_const","eof","int","char","=","==",",","asm",
 		"string","*","long","int64","+","-","*","/",
 		"|","&","pointer","if","else",">","<","!=",
-		"++","--","for"};
+		"++","--","for","while"};
 
 const int plusplus_post = 1;
 const int plusplus_pre = 2;
