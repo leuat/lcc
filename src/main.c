@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
 					current_system = system_c64;
 				else
 				if (strcmp(argv[i+1],"amd64")==0)
-					current_system = system_c64;
+					current_system = system_amd64;
 				else
 					raise_error_p1("Unknown system: ",argv[i+1]);
 				i+=1;	

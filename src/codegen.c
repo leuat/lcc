@@ -13,7 +13,7 @@ symbol* current_symbol = NULL;
 int current_label=0;
 char current_label_str[N];
 char cur_default_int_type[N] = "uint8";
-
+void tripe_val(node* n2, char* v);
 
 char* get_int(int i) {
   sprintf(temp_buffer,"%s:%d",cur_default_int_type,i);
@@ -134,6 +134,27 @@ void visit_define_general(node*n) {
     raise_error("codegen visit_var_decl NULL should not happen!");
 
   symbol* s = symbol_find(n->token.str_value);
+
+
+  if (s->type->type.type == tt_char) {
+    if (n->token.large_string!=NULL) {
+    // Do the .uint8 thingt
+      lbll(n->token.str_value);
+      part(".uint8\t");
+      int i=0;
+      while (n->token.large_string[i]!=0) {
+//        printf("%02X:%02X:%02X:%02X", buf[0], buf[1], buf[2], buf[3]);
+
+        sprintf(temp_buffer,"%02X",(unsigned char)n->token.large_string[i]);
+        part(temp_buffer);
+        part(" ");
+        i++;
+      }
+      part("00\n");
+      return;
+    }
+  }
+
   if (n->token.is_pointer) {
       str_doublet("declptr",n->token.str_value,"uint16:0");
 
@@ -191,20 +212,29 @@ void visit_call_proc(node* n) {
   node* param = n->left;
   int no_params = 0;
   while (param!=NULL) {
-    //printf("JADDA %s\n ",param->token.str_value);
-  //  db("ID ",param->type);
-  
-    codegen_visit(param);
-    as("push rax");
-    no_params++;
-    param = param->right;
+
+    if (current_system==system_amd64) {
+      char tmp[N] = "";
+      tripe_val(param,tmp);
+      str_doublet("push",tmp,"");
+//      codegen_visit(param);
+  //    as("push r0");
+      no_params++;
+      param = param->right;
+    }
+    if (current_system==system_c64) {
+      raise_error("6502 function parameters not supported yet. ");
+    }
   }
 
   part("\tcall ");
   part(n->token.str_value);
   part("\n");
-  for (int i=0;i<no_params;i++)
-    as("pop rbx");
+  for (int i=0;i<no_params;i++) {
+    if (current_system==system_amd64) {
+      as("pop r0");
+    }
+  }
 }
 
 
@@ -543,9 +573,11 @@ void codegen_visit(node* node)
   // Inline assembler
   if (node->type==nt_asm) {
     int i=0;
+    as(".asm\n");    
     while (node->token.large_string[i]!=0) {
       stamp(node->token.large_string[i++]);
     }
+    as(".endasm\n");    
     return;
   }
 
